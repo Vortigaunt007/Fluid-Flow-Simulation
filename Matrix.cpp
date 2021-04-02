@@ -20,8 +20,6 @@ size_t Matrix::getM() const
     return M;
 }
 
-
-
 void Matrix::setSize()
 {
     field.resize(M);

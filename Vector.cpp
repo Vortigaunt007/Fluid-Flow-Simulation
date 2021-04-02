@@ -64,6 +64,7 @@ void Vector::saveToFile(size_t num_string, size_t num_column, std::string filena
     B_grid.saveToFile(filename);
 }
 
+
 std::ostream & operator<<(std::ostream &os, const Vector &s)
 {
     for (size_t i = 0; i < s.M; i++)

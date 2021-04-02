@@ -15,6 +15,7 @@ double Tensor::K_11(size_t i, size_t j)
 {
     double x = i * hx;
     double y = j * hy;
+    return 1.0;
     return (k_r * x * x + k_t * y * y)/(x * x + y * y);
 }
 
@@ -38,6 +39,7 @@ double Tensor::K_22(size_t i, size_t j)
 {
     double x = i * hx;
     double y = j * hy;
+    return 1.0;
     return (k_r * y * y + k_t * x * x)/(x * x + y * y);
 }
 

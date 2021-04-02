@@ -83,6 +83,20 @@ Vector Grid::initialization_b_test()
 }
 
 
+double Grid::coef_a_x(size_t i, size_t j, Tensor &K_Tensor)
+{
+    return 2 * K_Tensor.K_11(i - 1, j) * K_Tensor.K_11(i, j)
+            / (K_Tensor.K_11(i - 1, j) + K_Tensor.K_11(i, j));
+}
+
+
+double Grid::coef_a_y(size_t i, size_t j, Tensor &K_Tensor)
+{
+    return 2 * K_Tensor.K_22(i, j - 1) * K_Tensor.K_22(i, j)
+            / (K_Tensor.K_22(i, j - 1) + K_Tensor.K_22(i, j));
+}
+
+
 Matrix Grid::initialization_A(Tensor &K_Tensor)
 {
     size_t line_index = 0;
@@ -101,10 +115,10 @@ Matrix Grid::initialization_A(Tensor &K_Tensor)
             } else if (node_type == LEFT) {
                 //std::cout << "LEFT"  << std::endl;
 
-                // first order of approximation
+               /* // first order of approximation
                 A.setValue(line_index, A_Grid.getPointIndex(1, j), 1.0 / hx * K_Tensor.K_11(1,j));
                 A.setValue(line_index, A_Grid.getPointIndex(0, j), -1.0 / hx * K_Tensor.K_11(0,j));
-
+               */
                 // second order of approximation
                 A.setValue(line_index, A_Grid.getPointIndex(0, j), -1.0 / hx + (K_Tensor.K_11(1, j) - K_Tensor.K_11(0, j))/(2 * K_Tensor.K_11(0, j) * hx));
                 A.setValue(line_index, A_Grid.getPointIndex(1, j), 1.0 / hx + hx / (hy * hy) * (K_Tensor.K_22(0, j) / K_Tensor.K_11(0, j))
@@ -115,10 +129,10 @@ Matrix Grid::initialization_A(Tensor &K_Tensor)
 
             } else if (node_type == RIGHT) {
                 //std::cout << "RIGHT" << std::endl;
-                // first order of approximation
+              /*  // first order of approximation
                 A.setValue(line_index, A_Grid.getPointIndex(N - 1, j), 1.0 / hx * K_Tensor.K_11(N - 1,j));
                 A.setValue(line_index, A_Grid.getPointIndex(N - 2, j), -1.0 / hx * K_Tensor.K_11(N - 2,j));                
-
+               */
                 // second order of approximation
                 A.setValue(line_index, A_Grid.getPointIndex(N - 1, j), -1.0 / hx + (K_Tensor.K_11(N - 2, j) - K_Tensor.K_11(N - 1, j))/(2 * K_Tensor.K_11(N - 1, j) * hx));
                 A.setValue(line_index, A_Grid.getPointIndex(N - 2, j), 1.0 / hx + hx / (hy * hy) * (K_Tensor.K_22(N - 1, j) / K_Tensor.K_11(N - 1, j))
@@ -130,9 +144,9 @@ Matrix Grid::initialization_A(Tensor &K_Tensor)
             } else if (node_type == BOTTOM) {
                 //std::cout << "BOTTOM" << std::endl;
                 // first order of approximation
-                A.setValue(line_index, A_Grid.getPointIndex(i, 1), 1.0 / hy * K_Tensor.K_22(i,1));
+               /* A.setValue(line_index, A_Grid.getPointIndex(i, 1), 1.0 / hy * K_Tensor.K_22(i,1));
                 A.setValue(line_index, A_Grid.getPointIndex(i, 0), -1.0 / hy * K_Tensor.K_22(i,0));
-
+                */
                 // second order of approximation
                 A.setValue(line_index, A_Grid.getPointIndex(i, 0), -1.0 / hy + (K_Tensor.K_22(i, 1) - K_Tensor.K_22(i, 0))/(2 * K_Tensor.K_22(i, 0) * hy));
                 A.setValue(line_index, A_Grid.getPointIndex(i, 1), 1.0 / hy + hy / (hx * hx) * (K_Tensor.K_11(i, 0) / K_Tensor.K_22(i, 0))
@@ -144,9 +158,9 @@ Matrix Grid::initialization_A(Tensor &K_Tensor)
             } else if (node_type == TOP) {
                 //std::cout << "TOP" << std::endl;
                 // first order of approximation
-                A.setValue(line_index, A_Grid.getPointIndex(i, N - 1), 1.0 / hy * K_Tensor.K_22(i,N - 1));
+              /*  A.setValue(line_index, A_Grid.getPointIndex(i, N - 1), 1.0 / hy * K_Tensor.K_22(i,N - 1));
                 A.setValue(line_index, A_Grid.getPointIndex(i, N - 2), -1.0 / hy * K_Tensor.K_22(i,N - 2));
-
+                */
                 // second order of approximation
                 A.setValue(line_index, A_Grid.getPointIndex(i, N - 1), -1.0 / hy + (K_Tensor.K_22(i, N - 2) - K_Tensor.K_22(i, N - 1))/(2 * K_Tensor.K_22(i, N - 1) * hy));
                 A.setValue(line_index, A_Grid.getPointIndex(i, N - 2), 1.0 / hy + hy / (hx * hx) * (K_Tensor.K_11(i, N - 1) / K_Tensor.K_22(i, N - 1))
@@ -158,19 +172,16 @@ Matrix Grid::initialization_A(Tensor &K_Tensor)
             } else if (node_type == CENTER) {
                 //std::cout << "CENTER" << std::endl;
 
-                double h_y_2, h_x_2;
-                h_y_2 = 1.0 / 2.0 / hy / hy;
-                h_x_2 = 1.0 / 2.0 / hx / hx;
-                //h_x_y = 1.0 / 2.0 / hx / hy;
+                double h_y, h_x;
+                h_y = 1.0 / hy / hy;
+                h_x = 1.0 / hx / hx;
 
-                A.setValue(line_index, A_Grid.getPointIndex(i, j - 1), h_y_2 * (K_Tensor.K_22(i, j) + K_Tensor.K_22(i, j - 1)));
-                //A.setValue(line_index, A_Grid.getPointIndex(i + 1, j - 1), - h_x_y * K_Tensor.K_12(i + 1, j) - h_x_y * K_Tensor.K_21(i, j - 1));
-                A.setValue(line_index, A_Grid.getPointIndex(i - 1, j), h_x_2 * (K_Tensor.K_11(i, j) + K_Tensor.K_11(i - 1, j)));
-                A.setValue(line_index, A_Grid.getPointIndex(i, j), - h_x_2 * (K_Tensor.K_11(i + 1, j) + K_Tensor.K_11(i, j)) - h_x_2 * (K_Tensor.K_11(i, j) + K_Tensor.K_11(i - 1, j))
-                                                              - h_y_2 * (K_Tensor.K_22(i, j + 1) + K_Tensor.K_22(i, j)) - h_y_2 * (K_Tensor.K_22(i, j) + K_Tensor.K_22(i, j - 1)));
-                A.setValue(line_index, A_Grid.getPointIndex(i + 1, j), h_x_2 * (K_Tensor.K_11(i + 1, j) + K_Tensor.K_11(i, j)));
-                //A.setValue(line_index, A_Grid.getPointIndex(i - 1, j + 1), - h_x_y * K_Tensor.K_12(i - 1, j) - h_x_y * K_Tensor.K_21(i, j + 1));
-                A.setValue(line_index, A_Grid.getPointIndex(i, j + 1), h_y_2 * (K_Tensor.K_22(i, j + 1) + K_Tensor.K_22(i, j)));
+                A.setValue(line_index, A_Grid.getPointIndex(i, j - 1), h_y * coef_a_y(i, j,  K_Tensor));
+                A.setValue(line_index, A_Grid.getPointIndex(i - 1, j), h_x * coef_a_x(i, j,  K_Tensor));
+                A.setValue(line_index, A_Grid.getPointIndex(i, j), - h_x * coef_a_x(i + 1, j,  K_Tensor) - h_x * coef_a_x(i, j,  K_Tensor)
+                                                              - h_y * coef_a_y(i, j + 1,  K_Tensor) - h_y * coef_a_y(i, j,  K_Tensor));
+                A.setValue(line_index, A_Grid.getPointIndex(i + 1, j), h_x * coef_a_x(i + 1, j,  K_Tensor));
+                A.setValue(line_index, A_Grid.getPointIndex(i, j + 1), h_y * coef_a_y(i, j + 1,  K_Tensor));
             }
         }
     }
@@ -180,7 +191,7 @@ Matrix Grid::initialization_A(Tensor &K_Tensor)
     return A;
 }
 
-Vector Grid::initialization_b(Tensor &K, Matrix &A, size_t l_dirichlet_i, size_t l_dirichlet_j, double value_dirichlet, size_t num,
+Vector Grid::initialization_b(Tensor &K, Matrix &A, size_t index_dirichlet, double value_dirichlet,
                               size_t l1_start, size_t l1_end, double value1,
                               size_t l2_start, size_t l2_end, double value2,
                               size_t l3_start, size_t l3_end, double value3,
@@ -196,42 +207,36 @@ Vector Grid::initialization_b(Tensor &K, Matrix &A, size_t l_dirichlet_i, size_t
     for (size_t i = 0; i < b.getSize(); i++)
         b[i] = 0;
 
-
+    //условия Неймана
     for (size_t i = l1_start; i < l1_end; i++) {
-        value_temp = (l1_end - l1_start) * K.K_11(0, i) * value1;
+        value_temp = (l1_end - l1_start) * getHx() * K.K_11(0, i) * value1;
         index = A_Grid.getPointIndex(0, i);
         b[index] = value_temp;
     }
 
     for (size_t i = l2_start; i < l2_end; i++) {
-        value_temp = (l2_end - l2_start) * K.K_11(M - 1, i) * value2;
+        value_temp = (l2_end - l2_start) * getHx() * K.K_11(M - 1, i) * value2;
         index = A_Grid.getPointIndex(M - 1, i);
         b[index] = value_temp;
     }
 
     for (size_t i = l3_start; i < l3_end; i++) {
-        value_temp = (l3_end - l3_start) * K.K_22(i, 0) * value3;
+        value_temp = value3 * (l3_end - l3_start) * getHx() / K.K_22(i, 0);
         index = A_Grid.getPointIndex(i ,0);
         b[index] = value_temp;
     }
 
     for (size_t i = l4_start; i < l4_end; i++) {
-        value_temp = (l4_end - l4_start) * K.K_22(i, N - 1) * value4;
+        value_temp = value4 * (l4_end - l4_start) * getHx() / K.K_22(i, N - 1) ;
         index = A_Grid.getPointIndex(i, N - 1);
         b[index] = value_temp;
     }
 
-    for (size_t i = 0; i < num; i++) {
-        index = A_Grid.getPointIndex(l_dirichlet_i, l_dirichlet_j);
-        for (size_t j = 0; j < A.getM(); j++)
-            A.setValue(index, j, 0.0);
-        A.setValue(index, index, 1.0);
-        b[index] = value_dirichlet;
-        if (l_dirichlet_i == 0)
-            l_dirichlet_j += 1;
-        else if (l_dirichlet_j == 0)
-            l_dirichlet_i += 1;
-    }
+    // условие Дирихле
+    for (size_t j = 0; j < A.getM(); j++)
+        A.setValue(index_dirichlet, j, 0.0);
+    A.setValue(index_dirichlet, index_dirichlet, 1.0);
+    b[index_dirichlet] = value_dirichlet;
 
     return b;
 }
@@ -239,4 +244,57 @@ Vector Grid::initialization_b(Tensor &K, Matrix &A, size_t l_dirichlet_i, size_t
 size_t Grid::getPointIndex(size_t i, size_t j)
 {
     return i * N + j;
+}
+
+std::vector <size_t> Grid::getPointCoordinates(size_t index)
+{
+    std::vector <size_t> IJ(2);
+
+    IJ[0] = index / N;
+    IJ[1] = index % N;
+
+    return IJ;
+}
+
+std::vector <size_t> Grid::boundary_points()
+{
+    std::vector <size_t> indices;
+    size_t index;
+
+    for (size_t i = 0; i < getM(); i++)
+        for (size_t j = 0; j < getN(); j++) {
+            typePoint index_type = type(i, j);
+            if (index_type == LEFT || index_type == RIGHT || index_type == BOTTOM || index_type == TOP || index_type == ANGLE) {
+                index = getPointIndex(i, j);
+                indices.push_back(index);
+            }
+        }
+
+    return indices;
+}
+
+
+
+Vector Grid::Vector_wo_boundary_nodes(Vector &v)
+{
+    std::vector <size_t> boundary_points_indices = boundary_points();
+    Vector res(v.getSize() - boundary_points_indices.size());
+    bool flag = false;
+    int count = 0;
+
+    for (size_t i = 0; i < getM(); i++) {
+        for (size_t j = 0; j < getN(); j++) {
+            flag = false;
+            size_t index = getPointIndex(i, j);
+            for (size_t k = 0; k < boundary_points_indices.size(); k++)
+                if (index == boundary_points_indices[k]) { // узел граничный
+                    flag = true;
+                    break;
+            }
+            if (!flag) // узел не граничный
+                res[count++] = v[index];
+        }
+    }
+
+    return res;
 }
